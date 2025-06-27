@@ -80,7 +80,7 @@
     <div class="error" id="error-message"></div>
     <input type="email" id="email" placeholder="Email" />
     <input type="password" id="password" placeholder="Password" />
-    <button onclick="loginToBothApps()">Login</button>
+    <button id="loginBtn" onclick="loginToBothApps()">Login</button>
 </div>
 
 <script>
@@ -95,6 +95,8 @@
         errorDiv.textContent = '';
 
         try {
+            document.getElementById('loginBtn').textContent = 'Loading...';
+
             const resA = await fetch('http://localhost:8000/api/login', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -118,9 +120,9 @@
             if (!resB.ok) {
                 throw new Error(dataB.message || 'Foodpanda login failed');
             }
-
-            // localStorage.setItem('foodpanda_token', dataB.token);
-            await storeFoodpandaToken(dataB.token);
+            localStorage.setItem('foodpanda_token', dataB.token);
+            await storeFoodpandaToken(dataA.token, dataB.token);
+            document.getElementById('loginBtn').textContent = 'Login';
 
             window.location.href = '/dashboard';
         } catch (err) {
@@ -137,14 +139,13 @@
             iframe.onload = () => {
                 iframe.contentWindow.postMessage(message, 'http://127.0.0.1:8001');
                 resolve();
-                // Optionally remove iframe after a delay to avoid race conditions:
                 setTimeout(() => document.body.removeChild(iframe), 1000);
             };
         });
     }
 
-    async function storeFoodpandaToken(token) {
-        await sendMessageToFoodpanda({ action: 'store_token', token });
+    async function storeFoodpandaToken(ecommerceToken, foodpandaToken) {
+        await sendMessageToFoodpanda({ action: 'store_token', ecommerceToken, foodpandaToken});
     }
 
 </script>

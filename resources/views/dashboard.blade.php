@@ -107,23 +107,33 @@
             emailEl.textContent = `Email: ${user.email}`;
         })
         .catch(() => {
+            localStorage.removeItem('ecommerce_token');
             localStorage.removeItem('foodpanda_token');
             window.location.href = '/login';
         });
 
 
+
     document.getElementById('logoutForm').addEventListener('submit', function (e) {
         e.preventDefault();
-        fetch('/api/logout', {
-            method: 'POST',
-            headers: {
-                'Authorization': 'Bearer ' + token
-            }
-        }).finally(() => {
-            localStorage.removeItem('ecommerce_token');
-            removeFoodpandaToken()
-            window.location.href = '/login';
-        });
+
+        const headers1 = {
+            'Authorization': 'Bearer ' + localStorage.getItem('ecommerce_token')
+        };
+        const headers2 = {
+            'Authorization': 'Bearer ' + localStorage.getItem('foodpanda_token')
+        };
+
+        fetch('http://localhost:8000/api/logout', { method: 'POST', headers: headers1 })
+            .finally(() => {
+                fetch('http://localhost:8001/api/logout', { method: 'POST', headers: headers2 })
+                    .finally(() => {
+                        localStorage.removeItem('foodpanda_token');
+                        localStorage.removeItem('ecommerce_token');
+                        removeFoodpandaToken();
+                        window.location.href = '/login';
+                    });
+            });
     });
     function sendMessageToFoodpanda(message) {
         return new Promise((resolve) => {
@@ -135,7 +145,7 @@
             iframe.onload = () => {
                 iframe.contentWindow.postMessage(message, 'http://127.0.0.1:8001');
                 resolve();
-                setTimeout(() => document.body.removeChild(iframe), 100);
+                setTimeout(() => document.body.removeChild(iframe), 1000);
             };
         });
     }
