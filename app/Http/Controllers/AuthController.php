@@ -11,36 +11,26 @@ class AuthController extends Controller
     {
         return view('login');
     }
-
-
-    public function login(Request $request)
+    public function apiLogin(Request $request)
     {
         $credentials = $request->only('email', 'password');
-
         if (!Auth::attempt($credentials)) {
-            return back()->withErrors(['error' => 'Invalid credentials']);
+            return response()->json(['message' => 'Invalid credentials'], 401);
         }
 
         $user = Auth::user();
-        $token = $user->createToken('sso')->plainTextToken;
+        $token = $user->createToken('ecommerce_token')->plainTextToken;
 
         return response()->json([
+            'message' => 'Login successful',
             'token' => $token,
-            'sso_url' => 'http://localhost:8001/sso-login?token=' . urlencode($token),
+            'user' => $user
         ]);
     }
 
-
-    public function logout(Request $request)
+    public function apiLogout(Request $request)
     {
-        if ($request->user()) {
-            $request->user()->tokens()->delete();
-        }
-
-        Auth::logout();
-        $request->session()->invalidate();
-        $request->session()->regenerateToken();
-
-        return redirect('/login')->with('message', 'You have been logged out.');
+        $request->user()->currentAccessToken()->delete();
+        return response()->json(['message' => 'Logged out']);
     }
 }

@@ -1,92 +1,128 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Login - Ecommerce</title>
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <title>Ecommerce Login</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <style>
         body {
             font-family: Arial, sans-serif;
-            background: #f4f7f8;
+            background: #f0f2f5;
             display: flex;
-            justify-content: center;
             align-items: center;
+            justify-content: center;
             height: 100vh;
         }
-
-        .login-box {
-            background: #fff;
-            padding: 30px 40px;
+        .card {
+            background: white;
+            padding: 2rem;
             border-radius: 8px;
-            box-shadow: 0 0 15px rgba(0,0,0,0.1);
-            width: 100%;
-            max-width: 400px;
+            width: 300px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
         }
-
-        .login-box h2 {
-            text-align: center;
-            margin-bottom: 20px;
-            color: #333;
+        h2 {
+            margin-bottom: 1rem;
         }
-
-        .login-box input[type="email"],
-        .login-box input[type="password"] {
+        input {
             width: 100%;
-            padding: 12px 10px;
-            margin: 10px 0;
+            margin-bottom: 1rem;
+            padding: 0.6rem;
             border: 1px solid #ccc;
             border-radius: 5px;
         }
-
-        .login-box button {
+        button {
             width: 100%;
-            padding: 12px;
-            background: #007bff;
-            border: none;
+            padding: 0.6rem;
+            background: #4f46e5;
             color: white;
-            font-size: 16px;
+            border: none;
             border-radius: 5px;
+            font-weight: bold;
             cursor: pointer;
-            margin-top: 15px;
         }
-
-        .login-box button:hover {
-            background: #0056b3;
+        button:hover {
+            background: #4338ca;
         }
-
-        .error-msg {
+        .error {
             color: red;
-            text-align: center;
+            margin-bottom: 1rem;
         }
     </style>
 </head>
 <body>
-<div class="login-box">
-    <h2>Login to Ecommerce</h2>
-
-    <form id="login-form" method="POST" action="{{ route('login') }}">
-        @csrf
-        <input type="email" name="email" placeholder="Email" required>
-        <input type="password" name="password" placeholder="Password" required>
-        <button type="submit">Login</button>
-    </form>
-
-    <div class="error-msg" id="error-msg"></div>
+<div class="card">
+    <h2>Ecommerce Login</h2>
+    <div class="error" id="error-message"></div>
+    <input type="email" id="email" placeholder="Email" />
+    <input type="password" id="password" placeholder="Password" />
+    <button onclick="loginToBothApps()">Login</button>
 </div>
 
 <script>
-    $('#login-form').submit(function(e) {
-        e.preventDefault();
-        $.post("{{ route('login') }}", $(this).serialize())
-            .done(function(res) {
-                console.log(res);
-                localStorage.setItem('sso_token', res.token);
-                window.open(res.sso_url, '_blank');
-                window.location.href = '/dashboard';
-            })
-            .fail(function(err) {
-                alert('Login failed');
+    const token = localStorage.getItem('ecommerce_token');
+    if (token) {
+        // Optionally verify token validity via API or just redirect
+        window.location.href = '/dashboard';
+    }
+    async function loginToBothApps() {
+        const email = document.getElementById('email').value;
+        const password = document.getElementById('password').value;
+        const errorDiv = document.getElementById('error-message');
+        errorDiv.textContent = '';
+
+        try {
+            const resA = await fetch('http://localhost:8000/api/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, password })
             });
-    });
+
+            const dataA = await resA.json();
+            if (!resA.ok) {
+                throw new Error(dataA.message || 'Ecommerce login failed');
+            }
+
+            localStorage.setItem('ecommerce_token', dataA.token);
+
+            const resB = await fetch('http://localhost:8001/api/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, password })
+            });
+
+            const dataB = await resB.json();
+            if (!resB.ok) {
+                throw new Error(dataB.message || 'Foodpanda login failed');
+            }
+
+            // localStorage.setItem('foodpanda_token', dataB.token);
+            await storeFoodpandaToken(dataB.token);
+
+            window.location.href = '/dashboard';
+        } catch (err) {
+            errorDiv.textContent = err.message;
+        }
+    }
+    function sendMessageToFoodpanda(message) {
+        return new Promise((resolve) => {
+            const iframe = document.createElement('iframe');
+            iframe.style.display = 'none';
+            iframe.src = 'http://127.0.0.1:8001/token-handler';
+            document.body.appendChild(iframe);
+
+            iframe.onload = () => {
+                iframe.contentWindow.postMessage(message, 'http://127.0.0.1:8001');
+                resolve();
+                // Optionally remove iframe after a delay to avoid race conditions:
+                setTimeout(() => document.body.removeChild(iframe), 1000);
+            };
+        });
+    }
+
+    async function storeFoodpandaToken(token) {
+        await sendMessageToFoodpanda({ action: 'store_token', token });
+    }
+
 </script>
 </body>
 </html>
