@@ -1,55 +1,80 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Ecommerce Login</title>
     <meta charset="UTF-8" />
+    <title>Ecommerce Login</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <style>
         body {
-            font-family: Arial, sans-serif;
-            background: #f0f2f5;
+            margin: 0;
+            padding: 0;
+            font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(to right, #f0fdfa, #ccfbf1);
             display: flex;
-            align-items: center;
             justify-content: center;
+            align-items: center;
             height: 100vh;
         }
+
         .card {
             background: white;
             padding: 2rem;
-            border-radius: 8px;
-            width: 300px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-        }
-        h2 {
-            margin-bottom: 1rem;
-        }
-        input {
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
             width: 100%;
-            margin-bottom: 1rem;
-            padding: 0.6rem;
-            border: 1px solid #ccc;
-            border-radius: 5px;
+            max-width: 400px;
         }
+
+        h2 {
+            text-align: center;
+            margin-bottom: 1.5rem;
+            color: #0f766e;
+            font-size: 1.8rem;
+        }
+
+        input {
+            width: 93%;
+            padding: 0.75rem;
+            margin-bottom: 1rem;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border 0.2s ease;
+        }
+
+        input:focus {
+            border-color: #14b8a6;
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(20, 184, 166, 0.2);
+        }
+
         button {
             width: 100%;
-            padding: 0.6rem;
-            background: #4f46e5;
+            padding: 0.75rem;
+            background-color: #14b8a6;
             color: white;
             border: none;
-            border-radius: 5px;
+            border-radius: 8px;
+            font-size: 1rem;
             font-weight: bold;
             cursor: pointer;
+            transition: background-color 0.3s ease;
         }
+
         button:hover {
-            background: #4338ca;
+            background-color: #0f766e;
         }
+
         .error {
-            color: red;
+            color: #ef4444;
+            font-size: 0.9rem;
             margin-bottom: 1rem;
+            text-align: center;
         }
     </style>
 </head>
 <body>
+
 <div class="card">
     <h2>Ecommerce Login</h2>
     <div class="error" id="error-message"></div>
@@ -61,7 +86,6 @@
 <script>
     const token = localStorage.getItem('ecommerce_token');
     if (token) {
-        // Optionally verify token validity via API or just redirect
         window.location.href = '/dashboard';
     }
     async function loginToBothApps() {

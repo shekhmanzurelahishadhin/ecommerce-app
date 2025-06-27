@@ -6,7 +6,7 @@
 <body>
 <script>
     window.addEventListener('message', event => {
-        if (event.origin !== 'http://127.0.0.1:8001') return; // Only trust your ecommerce app
+        if (event.origin !== 'http://127.0.0.1:8001') return;
 
         const { action, token } = event.data;
 
