@@ -7,7 +7,7 @@ This project demonstrates **multi-app authentication** using **Laravel Sanctum**
 
 ## 🛠 Requirements
 
-- PHP >= 8.1
+- PHP = 8.2
 - Composer
 - Laravel = 12
 - Node.js (for frontend assets if needed)
@@ -53,6 +53,13 @@ For `foodpanda`:
 ```
 APP_NAME=Foodpanda
 APP_URL=http://localhost:8001
+```
+Set your database credentials in `.env`:
+
+```dotenv
+DB_DATABASE=sso_app
+DB_USERNAME=your_username
+DB_PASSWORD=your_password
 ```
 
 Set up your database credentials and then run:
